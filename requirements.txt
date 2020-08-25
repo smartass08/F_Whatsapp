@@ -1,0 +1,4 @@
+webwhatsapi
+aiohttp
+pymongo[srv]
+python-telegram-bot
