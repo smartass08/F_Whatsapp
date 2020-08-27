@@ -4,7 +4,6 @@ from helpers.wp import Whatsapp
 
 
 async def lol(loop):
-    print("Main function working!")
     whatsapp = Whatsapp(loop)
     await whatsapp.start()
 
