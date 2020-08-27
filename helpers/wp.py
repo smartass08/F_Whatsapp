@@ -1,8 +1,8 @@
 import asyncio
-import configparser
 import os
 from signal import SIGINT
 
+from decouple import config, Csv
 from webwhatsapi.async_driver import WhatsAPIDriverAsync
 from webwhatsapi.objects.message import Message
 
@@ -12,9 +12,7 @@ from helpers.telegram import Telegram
 
 class Whatsapp:
     def __init__(self, loop):
-        config = configparser.ConfigParser()
-        config.read('config.ini')
-        self._links_to_check = list(map(lambda x: x.strip(), config['config']['Links-to-Check'].split(",")))
+        self._links_to_check = list(map(lambda x: x.strip(), config('Links-to-Check', cast=Csv())))
         self._loop = loop
         self._db = DB()
         self._driver = None
