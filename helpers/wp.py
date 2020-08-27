@@ -1,11 +1,12 @@
 import asyncio
 import os
-import json
+from signal import SIGINT
+
 from webwhatsapi.async_driver import WhatsAPIDriverAsync
 from webwhatsapi.objects.message import Message
-from signal import SIGINT
-from helpers.telegram import Telegram
+
 from helpers.DB import DB
+from helpers.telegram import Telegram
 
 
 class Whatsapp:
@@ -20,7 +21,7 @@ class Whatsapp:
             os.makedirs(self._config_dir)
 
     async def make(self):
-        self._db.savejson()
+        self._db.save_json()
         await self.sleep(10)
         self._driver = WhatsAPIDriverAsync(loadstyles=True, loop=self._loop, profile=self._config_dir, client="remote",
                                            command_executor=os.environ["SELENIUM"])
@@ -31,19 +32,19 @@ class Whatsapp:
     async def start(self):
         await self.make()
         self._loop.add_signal_handler(SIGINT, self.stop)
-        task1 = self.monitorMessages()
+        task1 = self.monitor_messages()
         await asyncio.wait([task1], loop=self._loop)
 
-    async def monitorMessages(self):
+    async def monitor_messages(self):
         print("Connecting...")
         await self._driver.connect()
         print("Wait for login...")
         await self._driver.wait_for_login()
         await self._driver.save_firefox_profile(remove_old=True)
-        self._db.addjson()
+        self._db.add_json()
         while True:
             print("Checking for more messages, status", await self._driver.get_status())
-            for cnt in await self.getUnReadMessages():
+            for cnt in await self.get_unread_messages():
                 if self.is_cancelled:
                     break
                 for message in cnt.messages:
@@ -52,7 +53,7 @@ class Whatsapp:
                         name = message.sender.name
                         if name is None:
                             name = message.sender.get_safe_name()
-                        if shit['chat']['isGroup'] == True:
+                        if shit['chat']['isGroup']:
                             name = shit['chat']['contact']['formattedName']
                         if "//meet.google.com/" in message.content:
                             try:
@@ -65,7 +66,7 @@ class Whatsapp:
     def stop(self, *args, **kwargs):
         self.is_cancelled = True
 
-    async def getUnReadMessages(self):
+    async def get_unread_messages(self):
         cnts = []
         for contact in await self._driver.get_unread():
             print(f"Found Contact: {contact}")

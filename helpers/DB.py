@@ -4,7 +4,8 @@ import os
 
 import pymongo
 
-class DB():
+
+class DB:
     def __init__(self):
         config = configparser.ConfigParser()
         config.read('config.ini')
@@ -18,27 +19,27 @@ class DB():
         client = pymongo.MongoClient(self.__dblink)
         return client.access
 
-    def getJsonDB(self):
+    def get_json_db(self):
         cursor = self.__db.json.find()
         for c in cursor:
             return c.get("access_token")
         return ""
 
-    def addjson(self):
+    def add_json(self):
         logging.info("Adding access token to DB")
         with open(self.__json) as f:
             data = f.read()
-        previousToken = self.getJsonDB()
-        cur_filter = {"access_token": previousToken}
+        previous_token = self.get_json_db()
+        cur_filter = {"access_token": previous_token}
         self.__db.json.update_one(cur_filter, {'$set': {"access_token": data}}, upsert=True)
 
-    def savejson(self):
+    def save_json(self):
         try:
             os.remove(self.__json)
         except Exception:
             logging.info("No access token found on local")
         logging.info("Getting access token from the DB")
-        data = self.getJsonDB()
+        data = self.get_json_db()
         if len(data) == 0:
             logging.info("No access token found in DB, Assuming first time run")
             return
