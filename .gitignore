@@ -1,3 +1,6 @@
 venv/
 .idea/
 config.ini
+__pycache__/
+cached-packages/
+firefox_cache/

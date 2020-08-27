@@ -1,4 +1,5 @@
 import asyncio
+import configparser
 import os
 from signal import SIGINT
 
@@ -11,6 +12,9 @@ from helpers.telegram import Telegram
 
 class Whatsapp:
     def __init__(self, loop):
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+        self._links_to_check = list(map(lambda x: x.strip(), config['config']['Links-to-Check'].split(",")))
         self._loop = loop
         self._db = DB()
         self._driver = None
@@ -36,6 +40,7 @@ class Whatsapp:
         await asyncio.wait([task1], loop=self._loop)
 
     async def monitor_messages(self):
+        print(self._links_to_check)
         print("Connecting...")
         await self._driver.connect()
         print("Wait for login...")
@@ -50,16 +55,17 @@ class Whatsapp:
                 for message in cnt.messages:
                     if isinstance(message, Message):
                         shit = message.get_js_obj()
-                        name = message.sender.name
+                        name = message.sender.push_name
                         if name is None:
                             name = message.sender.get_safe_name()
-                        if shit['chat']['isGroup']:
-                            name = shit['chat']['contact']['formattedName']
-                        if "//meet.google.com/" in message.content:
-                            try:
-                                self._tg.msg_channel(name, shit['sender']['id']['user'], message.content)
-                            except Exception as e:
-                                self._tg.message("New invite link failed to deliver!, Check phone asap | error message = {}".format(e))
+                        chat = shit['chat']['contact']['formattedName']
+
+                        for link in self._links_to_check:
+                            if link.lower() in message.content.lower():
+                                try:
+                                    self._tg.msg_channel(chat, name, message.content)
+                                except Exception as e:
+                                    self._tg.message("New invite link failed to deliver!, Check phone asap | error message = {}".format(e))
 
             await self.sleep(3)
 

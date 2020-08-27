@@ -1,8 +1,6 @@
-import urllib
-from telegram import bot
-from telegram.ext import Updater
 import configparser
-from urllib.parse import urlparse
+
+from telegram.ext import Updater
 
 
 class Telegram:
@@ -23,7 +21,7 @@ class Telegram:
 
     def msg_channel(self, name, info, message):
         chat = self.__service.bot.getChat(self.__channel_id)
-        msg = "<b>New Invite Arrived!</b>\n{} | {}\n\n{}".format(name, info, message)
+        msg = f"<b>New Invite Arrived!</b>\n{name} | {info}\n\n{message}"
         chat.send_message(msg, parse_mode="HTML", disable_web_page_preview=True)
 
 
