@@ -6,9 +6,10 @@
   2) Whatsapp account (duh?)
  
  #### Steps for running:
-  1) Fill the config.ini file (DON'T  USE QUOTES OR DOUBLE QUOTATION MARKS, thx)
-  2) `Docker-compose run` 
-  3) If running first time - Use any VNC viewer to connect into `localhost:5900` (password is `secret`) and scan the QR code. (This only is required once and that is on first run)
+  1) Make a copy of `sample_config.ini` and name it `config.ini` / Rename `sample_config.ini` to `config.ini`
+  2) Fill the `config.ini` file (DON'T  USE QUOTES OR DOUBLE QUOTATION MARKS, thx)
+  3) `Docker-compose run` 
+  4) If running first time - Use any VNC viewer to connect into `localhost:5900` (password is `secret`) and scan the QR code. (This only is required once and that is on first run)
   
  #### Limitations:
   1) Can't select individual chats, So it works globally. (My understanding of python is very low right now and I'm sorry for that)
