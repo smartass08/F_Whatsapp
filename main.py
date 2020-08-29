@@ -9,8 +9,7 @@ async def lol(loop):
 
 
 def main():
-    format = "%(asctime)s: %(message)s"
-    logging.basicConfig(format=format, level=logging.INFO,
+    logging.basicConfig(format="%(asctime)s: %(message)s", level=logging.INFO,
                         datefmt="%H:%M:%S")
     loop = asyncio.get_event_loop()
     loop.run_until_complete(lol(loop))
