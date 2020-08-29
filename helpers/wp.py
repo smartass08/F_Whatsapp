@@ -46,24 +46,28 @@ class Whatsapp:
         await self._driver.save_firefox_profile(remove_old=True)
         self._db.add_json()
         while True:
-            print("Checking for more messages, status", await self._driver.get_status())
-            for cnt in await self.get_unread_messages():
-                if self.is_cancelled:
-                    break
-                for message in cnt.messages:
-                    if isinstance(message, Message):
-                        shit = message.get_js_obj()
-                        name = message.sender.push_name
-                        if name is None:
-                            name = message.sender.get_safe_name()
-                        chat = shit['chat']['contact']['formattedName']
+            try:
+                print("Checking for more messages, status", await self._driver.get_status())
+                for cnt in await self.get_unread_messages():
+                    if self.is_cancelled:
+                        break
+                    for message in cnt.messages:
+                        if isinstance(message, Message):
+                            shit = message.get_js_obj()
+                            name = message.sender.push_name
+                            if name is None:
+                                name = message.sender.get_safe_name()
+                            chat = shit['chat']['contact']['formattedName']
 
-                        for link in self._links_to_check:
-                            if link.lower() in message.content.lower():
-                                try:
-                                    self._tg.msg_channel(chat, name, message.content)
-                                except Exception as e:
-                                    self._tg.message("New invite link failed to deliver!, Check phone asap | error message = {}".format(e))
+                            for link in self._links_to_check:
+                                if link.lower() in message.content.lower():
+                                    try:
+                                        self._tg.msg_channel(chat, name, message.content)
+                                    except Exception as e:
+                                        self._tg.message("New invite link failed to deliver!, Check phone asap | error message = {}".format(e))
+            except Exception as e:
+                print(e)
+                continue
 
             await self.sleep(3)
 
