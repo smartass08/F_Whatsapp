@@ -6,8 +6,8 @@
   2) Whatsapp account (duh?)
  
  #### Steps for running:
-  1) Make a copy of `sample_config.ini` and name it `config.ini` / Rename `sample_config.ini` to `config.ini`
-  2) Fill the `config.ini` file (DON'T  USE QUOTES OR DOUBLE QUOTATION MARKS, thx)
+  1) Make a copy of `sample_config.ini` and name it `settings.ini` / Rename `sample_config.ini` to `config.ini`
+  2) Fill the `settings.ini` file (DON'T  USE QUOTES OR DOUBLE QUOTATION MARKS, thx)
   3) `docker-compose up` 
   4) If running first time - Use any VNC viewer to connect into `localhost:5900` (password is `secret`) and scan the QR code. (This only is required once and that is on first run)
   

@@ -1,14 +1,11 @@
-import configparser
-
+from decouple import config
 from telegram.ext import Updater
 
 
 class Telegram:
     def __init__(self):
-        config = configparser.ConfigParser()
-        config.read('config.ini')
-        self.__bot_token = config['config']['Bot-Token']
-        self.__channel_id = config['config']['Channel-ID']
+        self.__bot_token = config('Bot-Token')
+        self.__channel_id = config('Channel-ID')
         self.__service = self.service()
 
     def service(self):

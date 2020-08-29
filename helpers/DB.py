@@ -1,15 +1,13 @@
-import configparser
 import logging
 import os
 
 import pymongo
+from decouple import config
 
 
 class DB:
     def __init__(self):
-        config = configparser.ConfigParser()
-        config.read('config.ini')
-        self.__dblink = config['config']['DB']
+        self.__dblink = config('DB')
         self.__db = self.config()
         if not os.path.exists(os.path.join(".", "firefox_cache")):
             os.makedirs(os.path.join(".", "firefox_cache"))
