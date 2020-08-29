@@ -62,9 +62,9 @@ class Whatsapp:
                             for link in self._links_to_check:
                                 if link.lower() in message.content.lower():
                                     try:
-                                        self._tg.msg_channel(chat, name, message.content)
+                                        self._tg.log_link(chat, name, message.content)
                                     except Exception as e:
-                                        self._tg.message("New invite link failed to deliver!, Check phone asap | error message = {}".format(e))
+                                        self._tg.log_message("New invite link failed to deliver!, Check phone asap | error log_message = {}".format(e))
             except Exception as e:
                 print(e)
                 continue
