@@ -19,6 +19,7 @@ ExecStart=/usr/local/bin/docker-compose up --build --abort-on-container-exit
 
 # Compose down, remove containers and volumes
 ExecStop=/usr/local/bin/docker-compose down -v
+ExecStop=/usr/local/bin/docker image prune -af
 
 [Install]
 WantedBy=multi-user.target
