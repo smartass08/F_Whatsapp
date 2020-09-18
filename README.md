@@ -1,4 +1,4 @@
- ## A noob script which sends google meet links to telegram from whatsapp chats
+ ## A noob script which sends links to telegram from whatsapp chats
  
  
  #### Requirements:
