@@ -17,4 +17,4 @@ WORKDIR /app
 
 ENV SELENIUM "http://firefox:4444/wd/hub"
 
-CMD ["bash","start.sh"]
+CMD ["python", "-u", "main.py"]
