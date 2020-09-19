@@ -1,12 +1,15 @@
 [Unit]
-Description=Docker Compose Application Service
+Description=Whatsapp to Telegram
 Requires=docker.service
 After=docker.service
 
 [Service]
 Restart=always
-WorkingDirectory=/home/smartass08/F_Whatsapp
-RuntimeMaxSec=43200
+# Set working directory to where you've cloned the project
+WorkingDirectory=/home/user/F_Whatsapp
+# There can be random links it misses if it runs for too long, so restart every 12 hours
+RuntimeMaxSec=43200 
+
 # Remove old containers, images and volumes
 ExecStartPre=/usr/local/bin/docker-compose down -v
 ExecStartPre=/usr/local/bin/docker-compose rm -fv
@@ -17,9 +20,10 @@ ExecStartPre=-/bin/bash -c 'docker ps -aqf "name=%i_*" | xargs docker rm'
 # Compose up
 ExecStart=/usr/local/bin/docker-compose up --build --abort-on-container-exit
 
-# Compose down, remove containers and volumes
+# Compose down, remove containers, untagged images and volumes
 ExecStop=/usr/local/bin/docker-compose down -v
-ExecStop=/usr/local/bin/docker image prune -af
+ExecStop=/usr/bin/docker rmi f_whatsapp_whatsapp:latest -f
+ExecStop=/usr/bin/docker image prune -f
 
 [Install]
 WantedBy=multi-user.target
