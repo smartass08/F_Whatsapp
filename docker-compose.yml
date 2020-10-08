@@ -25,6 +25,7 @@ services:
     volumes:
        - ".:/app"
        -  ./cached-packages:/usr/local/lib/f_whatsapp/python/site-packages/
+       - ./qrs:/tmp
     networks:
        - selenium
     depends_on:

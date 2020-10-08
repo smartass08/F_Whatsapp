@@ -1,5 +1,6 @@
 import asyncio
 import os
+from os.path import isfile
 from signal import SIGINT
 
 from decouple import config, Csv
@@ -42,7 +43,15 @@ class Whatsapp:
         print("Connecting...")
         await self._driver.connect()
         print("Wait for login...")
-        await self._driver.wait_for_login()
+        # get qr code
+        login_status = await self._driver.wait_for_login()
+        if not login_status:
+            filepath = await self._driver.get_qr()
+            print("The QR is at", filepath.replace("/tmp", "qrs"))
+        # wait for user to login
+        while not login_status:
+            print("Wait for login...")
+            login_status = await self._driver.wait_for_login()
         await self._driver.save_firefox_profile(remove_old=True)
         self._db.add_json()
         while True:
