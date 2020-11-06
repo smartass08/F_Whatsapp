@@ -6,7 +6,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com) 
 ![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/ksdfg/Meetings-Channel) 
 ![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed-raw/ksdfg/Meetings-Channel) 
-![GitHub License](https://img.shields.io/github/license/ksdfg/Meetings-Channel)
+[![GitHub](https://img.shields.io/github/license/ksdfg/meetings-channel)](https://github.com/ksdfg/meetings-channel/blob/master/LICENSE)
  
  A small project which sends links to telegram from whatsapp chats and email.
  
