@@ -1,5 +1,14 @@
- ## A noob script which sends links to telegram from whatsapp chats and email
+ # Meetings Channel
  
+ [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/ksdfg/Meetings-Channel/graphs/commit-activity)
+![GitHub contributors](https://img.shields.io/github/contributors/ksdfg/Meetings-Channel)
+![GitHub last commit](https://img.shields.io/github/last-commit/ksdfg/Meetings-Channel)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com) 
+![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/ksdfg/Meetings-Channel) 
+![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed-raw/ksdfg/Meetings-Channel) 
+![GitHub License](https://img.shields.io/github/license/ksdfg/Meetings-Channel)
+ 
+ A small project which sends links to telegram from whatsapp chats and email.
  
  #### Requirements:
   1) Docker and docker-compose
