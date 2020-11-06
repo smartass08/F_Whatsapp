@@ -1,12 +1,12 @@
 [Unit]
-Description=Whatsapp to Telegram
+Description=sends links to telegram from whatsapp chats and email
 Requires=docker.service
 After=docker.service
 
 [Service]
 Restart=always
 # Set working directory to where you've cloned the project
-WorkingDirectory=/home/user/F_Whatsapp
+WorkingDirectory=/home/user/Meetings-Channel
 # There can be random links it misses if it runs for too long, so restart every 12 hours
 RuntimeMaxSec=43200 
 
@@ -18,10 +18,11 @@ ExecStartPre=-/bin/bash -c 'docker network ls -qf "name=%i_" | xargs docker netw
 ExecStartPre=-/bin/bash -c 'docker ps -aqf "name=%i_*" | xargs docker rm'
 
 # Compose up
-ExecStart=/usr/local/bin/docker-compose up --build --abort-on-container-exit
+ExecStart=/usr/bin/docker build -t meetings-channel .
+ExecStart=/usr/local/bin/docker-compose up --remove-orphans --abort-on-container-exit
 
 # Compose down, remove containers, untagged images and volumes
-ExecStop=/usr/local/bin/docker-compose down -v
+ExecStop=/usr/local/bin/docker-compose down -v --remove-orphans
 ExecStop=/usr/bin/docker rmi f_whatsapp_whatsapp:latest -f
 ExecStop=/usr/bin/docker image prune -f
 
