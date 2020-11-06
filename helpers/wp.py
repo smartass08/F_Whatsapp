@@ -1,6 +1,5 @@
 import asyncio
 import os
-from os.path import isfile
 from signal import SIGINT
 
 from decouple import config, Csv
@@ -26,8 +25,13 @@ class Whatsapp:
     async def make(self):
         self._db.save_json()
         await self.sleep(10)
-        self._driver = WhatsAPIDriverAsync(loadstyles=True, loop=self._loop, profile=self._config_dir, client="remote",
-                                           command_executor=os.environ["SELENIUM"])
+        self._driver = WhatsAPIDriverAsync(
+            loadstyles=True,
+            loop=self._loop,
+            profile=self._config_dir,
+            client="remote",
+            command_executor=os.environ["SELENIUM"],
+        )
 
     async def sleep(self, sleep_time):
         await asyncio.sleep(sleep_time, loop=self._loop)
@@ -73,7 +77,11 @@ class Whatsapp:
                                     try:
                                         self._tg.log_link(chat, name, message.content)
                                     except Exception as e:
-                                        self._tg.log_message("New invite link failed to deliver!, Check phone asap | error log_message = {}".format(e))
+                                        self._tg.log_message(
+                                            "New invite link failed to deliver!, Check phone asap | error log_message = {}".format(
+                                                e
+                                            )
+                                        )
             except Exception as e:
                 print(e)
                 continue
