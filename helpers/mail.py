@@ -1,13 +1,19 @@
 from email import message_from_bytes
 from email.header import decode_header
 from imaplib import IMAP4_SSL
+from re import findall
 from time import sleep
 from traceback import print_exc
-from typing import List
+from typing import List, Set
 
 from decouple import config, Csv
 
 from helpers.telegram import Telegram
+
+
+# monstrous regex I found on stackoverflow
+# this scares me but it works
+_mail_regex = r"\b((?:https?://)?(?:(?:www\.)?(?:[\da-z\.-]+)\.(?:[a-z]{2,6})|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|(?:(?:[0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,7}:|(?:[0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,5}(?::[0-9a-fA-F]{1,4}){1,2}|(?:[0-9a-fA-F]{1,4}:){1,4}(?::[0-9a-fA-F]{1,4}){1,3}|(?:[0-9a-fA-F]{1,4}:){1,3}(?::[0-9a-fA-F]{1,4}){1,4}|(?:[0-9a-fA-F]{1,4}:){1,2}(?::[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:(?:(?::[0-9a-fA-F]{1,4}){1,6})|:(?:(?::[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(?::[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(?:ffff(?::0{1,4}){0,1}:){0,1}(?:(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])|(?:[0-9a-fA-F]{1,4}:){1,4}:(?:(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])))(?::[0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])?(?:/[\w\.-]*)*/?)\b"
 
 
 class Email:
@@ -34,15 +40,20 @@ class Email:
 
         # get message body
         if email.is_multipart():
-            self.body = ""
+            body = ""
             for part in email.walk():
                 if "text" in part.get_content_type():
                     try:
-                        self.body += "<hr/>" + part.get_payload(decode=True).decode('utf-8')
+                        body += part.get_payload(decode=True).decode('utf-8')
                     except:
                         continue
         else:
-            self.body = email.get_payload(decode=True).decode('utf-8')
+            body = email.get_payload(decode=True).decode('utf-8')
+
+        # get all links from body
+        self.links: Set[str] = set()
+        for link in list(map(lambda x: x.strip(), config('Links-to-Check', cast=Csv()))):
+            self.links.update([x for x in findall(_mail_regex, body) if link in x])
 
 
 class MailService:
@@ -80,9 +91,8 @@ class MailService:
             for content in mail_content:
                 if isinstance(content, tuple):
                     email = Email(content[1])
-                    for link in self._links_to_check:
-                        if link.lower() in email.body.lower():
-                            mails.append(email)
+                    if email.links:
+                        mails.append(email)
 
         return mails
 
@@ -95,13 +105,15 @@ class MailService:
             for n, email in enumerate(mails):
                 try:
                     print(f"logging mail {n+1}/{len(mails)}")
-                    print(f"<b>New Invite Arrived!</b>\n{email.sender} | {email.subject}\n\n{email.body}")
-                    self._tg.log_message("incoming link")
-                    self._tg.log_link(
-                        email.sender.replace("<", "&lt;").replace(">", "&gt;"),
-                        email.subject,
-                        email.body.replace("<hr>", "").replace("<hr/>", "").replace("<", "&lt;").replace(">", "&gt;"),
+                    response = self._tg.log_link(
+                        email.sender.replace("<", "&lt;").replace(">", "&gt;"), email.subject, "\n".join(email.links)
                     )
+                    if response.status != 200:
+                        self._tg.log_message(
+                            f"<b>New invite link failed to deliver!\nCheck mail asap</b>\n\n"
+                            f"response status = <code>{response.status}</code>\n"
+                            f"response data = <code>{response.data.decode('utf-8')}</code>\n"
+                        )
                 except Exception as e:
                     self._tg.log_message(
                         f"New invite link failed to deliver!\nCheck mail asap\n\nerror log_message = <code>{e}</code>"

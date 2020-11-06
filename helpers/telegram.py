@@ -1,5 +1,5 @@
 from decouple import config
-from urllib3 import PoolManager
+from urllib3 import PoolManager, HTTPResponse
 from urllib3.exceptions import ProtocolError
 
 manager = PoolManager()  # create PoolManager object
@@ -11,7 +11,7 @@ class Telegram:
         self.__channel_id = config('Channel-ID')
 
     # function to log text messages to telegram channel
-    def send_message(self, chat_id, message, parse_mode="HTML", **kwargs):
+    def send_message(self, chat_id, message, parse_mode="HTML", **kwargs) -> HTTPResponse:
         # chat_id - ID of channel to which text log_message is to be logged
         # log_message - the content of the text log_message to be logged
         # parse_mode - what the text log_message is to be parsed as, defaults to HTML
@@ -30,9 +30,10 @@ class Telegram:
         except ProtocolError as e:
             print(e, e.__class__)
 
-    def log_message(self, message):
-        self.send_message(self.__channel_id, message, parse_mode="HTML")
+    def log_message(self, message) -> HTTPResponse:
+        return self.send_message(self.__channel_id, message, parse_mode="HTML")
 
-    def log_link(self, name, info, message):
+    def log_link(self, name, info, message) -> HTTPResponse:
         msg = f"<b>New Invite Arrived!</b>\n{name} | {info}\n\n{message}"
-        self.send_message(self.__channel_id, msg, parse_mode="HTML", disable_web_page_preview=True)
+        print(msg)
+        return self.send_message(self.__channel_id, msg, parse_mode="HTML", disable_web_page_preview=True)
