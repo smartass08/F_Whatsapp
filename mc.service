@@ -17,8 +17,10 @@ ExecStartPre=-/bin/bash -c 'docker volume ls -qf "name=%i_" | xargs docker volum
 ExecStartPre=-/bin/bash -c 'docker network ls -qf "name=%i_" | xargs docker network rm'
 ExecStartPre=-/bin/bash -c 'docker ps -aqf "name=%i_*" | xargs docker rm'
 
+# build the docker image
+ExecStartPre=/usr/bin/docker build -t meetings-channel .
+
 # Compose up
-ExecStart=/usr/bin/docker build -t meetings-channel .
 ExecStart=/usr/local/bin/docker-compose up --remove-orphans --abort-on-container-exit
 
 # Compose down, remove containers, untagged images and volumes
