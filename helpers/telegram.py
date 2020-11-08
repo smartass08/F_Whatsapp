@@ -35,5 +35,4 @@ class Telegram:
 
     def log_link(self, name, info, message) -> HTTPResponse:
         msg = f"<b>New Invite Arrived!</b>\n{name} | {info}\n\n{message}"
-        print(msg)
         return self.send_message(self.__channel_id, msg, parse_mode="HTML", disable_web_page_preview=True)
