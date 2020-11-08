@@ -88,6 +88,9 @@ class MailService:
             if status != "OK":
                 continue
 
+            # mark the mail as unread
+            self._service.store(mail_id, '-FLAGS', r'\SEEN')
+
             for content in mail_content:
                 if isinstance(content, tuple):
                     email = Email(content[1])
