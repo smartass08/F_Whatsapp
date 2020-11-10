@@ -1,7 +1,7 @@
 from email import message_from_bytes
 from email.header import decode_header
 from imaplib import IMAP4_SSL
-from re import findall
+from re import compile
 from time import sleep
 from traceback import print_exc
 from typing import List, Set
@@ -13,7 +13,6 @@ from helpers.telegram import Telegram
 
 # monstrous regex I found on stackoverflow
 # this scares me but it works
-_mail_regex = r"\b((?:https?://)?(?:(?:www\.)?(?:[\da-z\.-]+)\.(?:[a-z]{2,6})|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|(?:(?:[0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,7}:|(?:[0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,5}(?::[0-9a-fA-F]{1,4}){1,2}|(?:[0-9a-fA-F]{1,4}:){1,4}(?::[0-9a-fA-F]{1,4}){1,3}|(?:[0-9a-fA-F]{1,4}:){1,3}(?::[0-9a-fA-F]{1,4}){1,4}|(?:[0-9a-fA-F]{1,4}:){1,2}(?::[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:(?:(?::[0-9a-fA-F]{1,4}){1,6})|:(?:(?::[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(?::[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(?:ffff(?::0{1,4}){0,1}:){0,1}(?:(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])|(?:[0-9a-fA-F]{1,4}:){1,4}:(?:(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])))(?::[0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])?(?:/[\w\.-]*)*/?)\b"
 
 
 class Email:
@@ -50,10 +49,13 @@ class Email:
         else:
             body = email.get_payload(decode=True).decode('utf-8')
 
-        # get all links from body
-        self.links: Set[str] = set()
-        for link in list(map(lambda x: x.strip(), config('Links-to-Check', cast=Csv()))):
-            self.links.update([x for x in findall(_mail_regex, body) if link in x])
+        mail_regex = compile(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+")
+        links_to_search = compile(
+            f".*({'|'.join(config('Links-to-Check', cast=Csv(cast=lambda x: x.lower(), strip=' %*')))}).+"
+        )
+
+        # get all needed links from body
+        self.links: Set[str] = set(x.strip("<>") for x in mail_regex.findall(body.lower()) if links_to_search.match(x))
 
 
 class MailService:
@@ -63,7 +65,7 @@ class MailService:
 
     def __init__(self):
         self._tg = Telegram()
-        self._links_to_check = list(map(lambda x: x.strip(), config('Links-to-Check', cast=Csv())))
+        self._links_to_check = config('Links-to-Check', cast=Csv(strip=' %*'))
 
         self._service = IMAP4_SSL(config('Email-IMAP'))
         status, _ = self._service.login(config('Email-ID'), config('Email-Password'))  # login
@@ -109,7 +111,7 @@ class MailService:
                 try:
                     print(f"logging mail {n+1}/{len(mails)}")
                     response = self._tg.log_link(
-                        email.sender.replace("<", "&lt;").replace(">", "&gt;"), email.subject, "\n".join(email.links)
+                        email.sender.replace("<", "&lt;").replace(">", "&gt;"), email.subject, "\n\n".join(email.links)
                     )
                     if response.status != 200:
                         self._tg.log_message(

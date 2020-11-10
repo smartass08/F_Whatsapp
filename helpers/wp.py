@@ -1,5 +1,6 @@
 import asyncio
 import os
+from re import compile
 from signal import SIGINT
 
 from decouple import config, Csv
@@ -12,7 +13,7 @@ from helpers.telegram import Telegram
 
 class Whatsapp:
     def __init__(self, loop):
-        self._links_to_check = list(map(lambda x: x.strip(), config('Links-to-Check', cast=Csv())))
+        self._links_to_check = config('Links-to-Check', cast=Csv(strip=' %*', cast=lambda x: x.lower()))
         self._loop = loop
         self._db = DB()
         self._driver = None
@@ -72,16 +73,26 @@ class Whatsapp:
                                 name = message.sender.get_safe_name()
                             chat = shit['chat']['contact']['formattedName']
 
-                            for link in self._links_to_check:
-                                if link.lower() in message.content.lower():
-                                    try:
-                                        self._tg.log_link(chat, name, message.content)
-                                    except Exception as e:
-                                        self._tg.log_message(
-                                            "New invite link failed to deliver!, Check phone asap | error log_message = {}".format(
-                                                e
-                                            )
-                                        )
+                            mail_regex = compile(
+                                r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
+                            )
+                            links_to_search = compile(f".*({'|'.join(self._links_to_check)}).+")
+
+                            # get all links in the message that we are checking for
+                            links = set(
+                                x.strip("<>")
+                                for x in mail_regex.findall(message.content.lower())
+                                if links_to_search.match(x)
+                            )
+
+                            # send message
+                            if links:
+                                try:
+                                    self._tg.log_link(chat, name, message.content)
+                                except Exception as e:
+                                    self._tg.log_message(
+                                        f"New invite link failed to deliver!, Check phone asap | error log_message = {e}"
+                                    )
             except Exception as e:
                 print(e)
                 continue
