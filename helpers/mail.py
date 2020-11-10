@@ -1,7 +1,7 @@
 from email import message_from_bytes
 from email.header import decode_header
 from imaplib import IMAP4_SSL
-from re import compile
+from re import compile, sub
 from time import sleep
 from traceback import print_exc
 from typing import List, Set
@@ -49,13 +49,15 @@ class Email:
         else:
             body = email.get_payload(decode=True).decode('utf-8')
 
-        mail_regex = compile(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+")
+        mail_regex = compile(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+%]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+")
         links_to_search = compile(
             f".*({'|'.join(config('Links-to-Check', cast=Csv(cast=lambda x: x.lower(), strip=' %*')))}).+"
         )
 
         # get all needed links from body
-        self.links: Set[str] = set(x.strip("<>") for x in mail_regex.findall(body.lower()) if links_to_search.match(x))
+        self.links: Set[str] = set(
+            sub(r"(<.+>|<|>)", "", x) for x in mail_regex.findall(body) if links_to_search.match(x.lower())
+        )
 
 
 class MailService:

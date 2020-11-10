@@ -1,6 +1,6 @@
 import asyncio
 import os
-from re import compile
+from re import compile, sub
 from signal import SIGINT
 
 from decouple import config, Csv
@@ -80,9 +80,9 @@ class Whatsapp:
 
                             # get all links in the message that we are checking for
                             links = set(
-                                x.strip("<>")
-                                for x in mail_regex.findall(message.content.lower())
-                                if links_to_search.match(x)
+                                sub(r"(<.+>|<|>)", "", x)
+                                for x in mail_regex.findall(message.content)
+                                if links_to_search.match(x.lower())
                             )
 
                             # send message
