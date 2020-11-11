@@ -24,11 +24,20 @@ class Telegram:
         }
         data.update(kwargs)
 
-        try:
-            # POST call to telegram API
-            return manager.request("POST", f"https://api.telegram.org/bot{self.__bot_token}/sendMessage", fields=data)
-        except ProtocolError as e:
-            print(e, e.__class__)
+        error = None
+
+        for _ in range(5):
+            try:
+                # POST call to telegram API
+                return manager.request(
+                    "POST", f"https://api.telegram.org/bot{self.__bot_token}/sendMessage", fields=data
+                )
+            except ProtocolError as e:
+                error = e
+                print(e, e.__class__)
+
+        if error is not None:
+            raise error
 
     def log_message(self, message) -> HTTPResponse:
         return self.send_message(self.__channel_id, message, parse_mode="HTML")

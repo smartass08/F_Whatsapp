@@ -50,13 +50,12 @@ class Email:
             body = email.get_payload(decode=True).decode('utf-8')
 
         mail_regex = compile(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+%]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+")
-        links_to_search = compile(
-            f".*({'|'.join(config('Links-to-Check', cast=Csv(cast=lambda x: x.lower(), strip=' %*')))}).+"
-        )
+        links_to_check = config('Links-to-Check', cast=Csv(cast=lambda x: x.lower(), strip=' %*'))
+        meeting_regex = compile(f"^http[s]?://(?!www.google.com).*({'|'.join(links_to_check)}).+")
 
         # get all needed links from body
         self.links: Set[str] = set(
-            sub(r"(<.+>|<|>)", "", x) for x in mail_regex.findall(body) if links_to_search.match(x.lower())
+            sub(r"(<.+>.*|<|>)", "", x) for x in mail_regex.findall(body) if meeting_regex.match(x.lower())
         )
 
 
