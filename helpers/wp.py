@@ -85,10 +85,32 @@ class Whatsapp:
                                 if links_to_search.match(x.lower())
                             )
 
-                            # send message
+                            # By default, message should be sent
+                            send: bool = True
                             if links:
+                                filter_mode = config('Filter-Mode', None)
+                                if filter_mode:
+                                    # If we have any filters, assume message shouldn't be sent
+                                    send = False
+                                    if filter_mode == 'blacklist':
+                                        # Retrieve a comma-separate list of disallowed text
+                                        disallowed_text = config('blacklist', cast=Csv(cast=lambda x: x.lower(), strip=' %*'))
+                                        for text in disallowed_text:
+                                            # If any of the disallowed phrases are in the message content, do not send the message
+                                            if text in message.content:
+                                                send = False
+                                                break
+                                    else:
+                                        # Retrieve a comma-separate list of disallowed text
+                                        allowed_text = config('whitelist', cast=Csv(cast=lambda x: x.lower(), strip=' %*'))
+                                        for text in allowed_text:
+                                            # If any of the allowed phrases are in the message content, send the message
+                                            if text in message.content:
+                                                send = True
+                                                break
                                 try:
-                                    self._tg.log_link(chat, name, message.content)
+                                    if send:
+                                        self._tg.log_link(chat, name, message.content)
                                 except Exception as e:
                                     self._tg.log_message(
                                         f"New invite link failed to deliver!, Check phone asap | error log_message = {e}"
