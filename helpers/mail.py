@@ -63,6 +63,8 @@ class Email:
                     if text in body:
                         send = False
                         break
+                else:
+                    send = True
             else:
                 # Retrieve a comma-separate list of disallowed text
                 allowed_text = config('whitelist', cast=Csv(cast=lambda x: x.lower(), strip=' %*'))
@@ -72,14 +74,14 @@ class Email:
                         send = True
                         break
 
-        mail_regex = compile(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+%]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+")
+        url_regex = compile(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+%]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+")
         links_to_check = config('Links-to-Check', cast=Csv(cast=lambda x: x.lower(), strip=' %*'))
         meeting_regex = compile(f"^http[s]?://(?!www.google.com).*({'|'.join(links_to_check)}).+")
 
         if send:
             # get all needed links from body
             self.links: Set[str] = set(
-                sub(r"(<.+>.*|<|>)", "", x) for x in mail_regex.findall(body) if meeting_regex.match(x.lower())
+                sub(r"(<.+>.*|<|>)", "", x) for x in url_regex.findall(body) if meeting_regex.match(x.lower())
             )
         else:
             self.links = set()

@@ -73,7 +73,7 @@ class Whatsapp:
                                 name = message.sender.get_safe_name()
                             chat = shit['chat']['contact']['formattedName']
 
-                            mail_regex = compile(
+                            url_regex = compile(
                                 r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
                             )
                             links_to_search = compile(f".*({'|'.join(self._links_to_check)}).+")
@@ -81,7 +81,7 @@ class Whatsapp:
                             # get all links in the message that we are checking for
                             links = set(
                                 sub(r"(<.+>|<|>)", "", x)
-                                for x in mail_regex.findall(message.content)
+                                for x in url_regex.findall(message.content)
                                 if links_to_search.match(x.lower())
                             )
 
@@ -94,7 +94,9 @@ class Whatsapp:
                                     send = False
                                     if filter_mode == 'blacklist':
                                         # Retrieve a comma-separate list of disallowed text
-                                        disallowed_text = config('blacklist', cast=Csv(cast=lambda x: x.lower(), strip=' %*'))
+                                        disallowed_text = config(
+                                            'blacklist', cast=Csv(cast=lambda x: x.lower(), strip=' %*')
+                                        )
                                         for text in disallowed_text:
                                             # If any of the disallowed phrases are in the message content, do not send the message
                                             if text in message.content:
@@ -102,7 +104,9 @@ class Whatsapp:
                                                 break
                                     else:
                                         # Retrieve a comma-separate list of disallowed text
-                                        allowed_text = config('whitelist', cast=Csv(cast=lambda x: x.lower(), strip=' %*'))
+                                        allowed_text = config(
+                                            'whitelist', cast=Csv(cast=lambda x: x.lower(), strip=' %*')
+                                        )
                                         for text in allowed_text:
                                             # If any of the allowed phrases are in the message content, send the message
                                             if text in message.content:
