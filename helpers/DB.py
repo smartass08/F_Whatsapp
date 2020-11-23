@@ -43,5 +43,3 @@ class DB:
             return
         file = open(self.__json, "w+")
         file.write(data)
-
-

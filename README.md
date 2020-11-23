@@ -26,6 +26,9 @@
   1) Can't select individual chats, So it works globally. (My understanding of python is very low right now and I'm sorry for that)
   2) Needs docker to run because the wrapper library refuses to work properly without it.
 
-
+ #### Filtering text
+  1) You can set `Filter-Mode` to `blacklist` or `whitelist` if you want to not send messages with certain text in them, or only send messages which contain certain text.
+  2) The default behaviour will just send all messages
+  3) Depending on what you set `Filter-Mode` as, you should set `Blacklist` or `Whitelist` as a comma separated list of strings to be checked for
 
 #### Please feel free to PR and help me improve this.
