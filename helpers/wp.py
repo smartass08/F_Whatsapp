@@ -102,6 +102,8 @@ class Whatsapp:
                                             if text in message.content:
                                                 send = False
                                                 break
+                                        else:
+                                            send = True
                                     else:
                                         # Retrieve a comma-separate list of disallowed text
                                         allowed_text = config(
